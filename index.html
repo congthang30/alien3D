@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#050811" />
+    <meta
+      name="description"
+      content="Trải nghiệm WebAR điện ảnh Cậu Bé Cưỡi Phi Thuyền với 8th Wall World Effects (SLAM) và Three.js"
+    />
+    <title>Boy Flying on Spaceship — WebAR 8th Wall & Three.js</title>
+
+    <!-- Google Fonts: Orbitron, Space Grotesk & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Outfit:wght@300;400;600;700&family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- 8th Wall Engine (SLAM World Tracking) and Extras -->
+    <script src="/external/xr/xr.js" async data-preload-chunks="slam"></script>
+    <script src="/external/xrextras/xrextras.js" defer></script>
+    <script src="/external/landing-page/landing-page.js" defer></script>
+  </head>
+  <body>
+    <!-- AR WebGL Canvas -->
+    <canvas id="ar-canvas" aria-label="WebAR Spaceship Canvas"></canvas>
+
+    <!-- UI Overlay Layer -->
+    <div id="app">
+      <!-- Header Topbar -->
+      <header class="topbar">
+        <div class="topbar-actions">
+          <button
+            class="icon-btn"
+            id="audio-toggle-btn"
+            type="button"
+            title="Bật/Tắt âm thanh phản lực"
+            aria-label="Toggle sci-fi audio"
+          >
+            <span id="audio-icon">🔊</span>
+          </button>
+
+          <button
+            class="mode-toggle-btn hidden"
+            id="mode-toggle-btn"
+            type="button"
+            title="Chuyển đổi giữa Camera AR và 3D Orbit Preview"
+          >
+            <span>📷 Bật Camera AR</span>
+          </button>
+
+          <div class="status-pill" id="status-pill">
+            <span class="status-dot loading" id="status-dot"></span>
+            <span id="status-text">Đang nạp mô hình...</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Welcome / Launch Modal -->
+      <div class="center-overlay" id="welcome-panel">
+        <div class="welcome-card">
+          <div class="card-crest">🚀 ❖ 👦</div>
+          <h1 class="card-headline">CẬU BÉ CƯỠI PHI THUYỀN</h1>
+          <p class="card-desc">
+            Trải nghiệm WebAR điện ảnh chân thực: Cậu bé đứng hiên ngang trên nóc phi thuyền, cùng lướt đi qua không gian thực tế với 8th Wall SLAM World Effects và Three.js.
+          </p>
+
+          <div class="meta-badges">
+            <span class="badge cyan">🚀 1 Retro Spaceship</span>
+            <span class="badge blue">👦 1 Cyber Boy</span>
+            <span class="badge purple">🌐 8th Wall SLAM Tracking</span>
+          </div>
+
+          <div class="loading-progress-container" id="loading-container">
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" id="progress-fill"></div>
+            </div>
+            <span class="progress-label" id="progress-label">Đang tải mô hình 3D (0%)...</span>
+          </div>
+
+          <div class="btn-group hidden" id="launch-buttons">
+            <button class="btn-primary" id="start-ar-btn" type="button">
+              <span>📷 BẬT CAMERA AR</span>
+              <span class="btn-arrow" aria-hidden="true">↗</span>
+            </button>
+
+            <button class="btn-secondary" id="preview-btn" type="button">
+              <span>🌐 XEM 3D PREVIEW</span>
+            </button>
+          </div>
+
+          <p class="device-hint" id="device-hint">
+            Hỗ trợ trải nghiệm AR thời gian thực trên camera di động hoặc xem 3D tương tác trên máy tính.
+          </p>
+        </div>
+      </div>
+
+      <!-- Bottom HUD & Interactive Timeline Controller -->
+      <footer class="bottom-controls hidden" id="bottom-controls">
+        <div class="timeline-bar-wrapper">
+          <div class="timeline-meta">
+            <span class="timeline-current-title" id="timeline-stage-name">1. Khởi Động</span>
+            <span class="timeline-time" id="timeline-time">00:00 / 00:52</span>
+          </div>
+          <div class="timeline-track" id="timeline-track">
+            <div class="timeline-fill" id="timeline-fill"></div>
+            <!-- Stage Markers -->
+            <div class="stage-markers" id="stage-markers">
+              <span class="marker active" data-stage="0" title="1. Mặt Đất"></span>
+              <span class="marker" data-stage="1" title="2. Khởi Động"></span>
+              <span class="marker" data-stage="2" title="3. Cất Cánh"></span>
+              <span class="marker" data-stage="3" title="4. Vòng Cung"></span>
+              <span class="marker" data-stage="4" title="5. Băng Ngang"></span>
+              <span class="marker" data-stage="5" title="6. Thăng Hoa"></span>
+              <span class="marker" data-stage="6" title="7. S-Curve"></span>
+              <span class="marker" data-stage="7" title="8. Lao Tới"></span>
+              <span class="marker" data-stage="8" title="9. Lướt Sát"></span>
+              <span class="marker" data-stage="9" title="10. Vòng Lặp Vô Tận"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hud-pill-bar">
+          <button class="control-btn cyan" id="play-pause-btn" type="button" title="Tạm dừng / Tiếp tục">
+            <span id="play-pause-icon">⏸</span>
+            <span id="play-pause-text">Tạm dừng</span>
+          </button>
+
+          <button class="control-btn" id="replay-btn" type="button" title="Xem lại từ đầu">
+            <span>↺ Xem lại</span>
+          </button>
+
+          <button class="control-btn purple" id="free-flight-btn" type="button" title="Tuần tra liên tục">
+            <span>♾ Bay Tự Do</span>
+          </button>
+
+          <button class="control-btn" id="cam-track-btn" type="button" title="Chuyển đổi góc nhìn máy ảnh">
+            <span id="cam-track-label">🎯 Bám Theo Tàu</span>
+          </button>
+
+          <button class="control-btn orange" id="speed-btn" type="button" title="Thay đổi tốc độ bay">
+            <span id="speed-label">⚡ Tốc Độ (1.8x)</span>
+          </button>
+
+          <button class="control-btn" id="scale-btn" type="button" title="Thay đổi kích thước mô hình">
+            <span id="scale-label">📐 Cỡ Phòng (0.85x)</span>
+          </button>
+        </div>
+      </footer>
+    </div>
+
+    <!-- Main Entry Module -->
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
